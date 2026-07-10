@@ -1,161 +1,91 @@
-const fs = require("fs");
-const path = require("path");
 const plugin = require("tailwindcss/plugin");
 
-const PREFIXES = [
-  "h-pr", "w-pr", "min-h-pr", "min-w-pr", "max-h-pr", "max-w-pr",
-  "top-pr", "right-pr", "bottom-pr", "left-pr",
-  "p-pr", "px-pr", "py-pr", "pt-pr", "pr-pr", "pb-pr", "pl-pr",
-  "m-pr", "mx-pr", "my-pr", "mt-pr", "mr-pr", "mb-pr", "ml-pr",
-  "basis-pr", "flex-basis-pr",
-  "grow-pr", "flex-grow-pr",
-  "shrink-pr", "flex-shrink-pr"
-];
-
-const VALID_EXTENSIONS = [
-  ".html", ".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte", ".astro", ".php", ".blade.php", ".twig", ".erb", ".liquid", ".mdx", ".md"
-];
-
-function hasValidExtension(filename) {
-  const lower = filename.toLowerCase();
-  return VALID_EXTENSIONS.some((ext) => lower.endsWith(ext));
+// Pre-populate percentage values from 0% to 1000%
+const percentValues = {};
+for (let i = 0; i <= 1000; i++) {
+  percentValues[i] = `${i}%`;
 }
 
-function getFilesRecursively(dir) {
-  let files = [];
-  if (!fs.existsSync(dir)) return files;
-  const list = fs.readdirSync(dir);
-  list.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      files = files.concat(getFilesRecursively(filePath));
-    } else {
-      files.push(filePath);
-    }
-  });
-  return files;
-}
-
-const prefixToProperties = {
-  "h-pr": ["height"],
-  "w-pr": ["width"],
-  "min-h-pr": ["min-height"],
-  "min-w-pr": ["min-width"],
-  "max-h-pr": ["max-height"],
-  "max-w-pr": ["max-width"],
-  
-  "top-pr": ["top"],
-  "right-pr": ["right"],
-  "bottom-pr": ["bottom"],
-  "left-pr": ["left"],
-  
-  "p-pr": ["padding"],
-  "px-pr": ["padding-left", "padding-right"],
-  "py-pr": ["padding-top", "padding-bottom"],
-  "pt-pr": ["padding-top"],
-  "pr-pr": ["padding-right"],
-  "pb-pr": ["padding-bottom"],
-  "pl-pr": ["padding-left"],
-  
-  "m-pr": ["margin"],
-  "mx-pr": ["margin-left", "margin-right"],
-  "my-pr": ["margin-top", "margin-bottom"],
-  "mt-pr": ["margin-top"],
-  "mr-pr": ["margin-right"],
-  "mb-pr": ["margin-bottom"],
-  "ml-pr": ["margin-left"],
-  
-  "basis-pr": ["flex-basis"],
-  "flex-basis-pr": ["flex-basis"],
-  
-  "grow-pr": ["flex-grow"],
-  "flex-grow-pr": ["flex-grow"],
-  "shrink-pr": ["flex-shrink"],
-  "flex-shrink-pr": ["flex-shrink"]
-};
-
-function extractPercentClasses(srcDir) {
-  const classes = new Set();
-  const files = getFilesRecursively(srcDir);
-  
-  // Regex to match classes like w-pr-50, -mt-pr-10, etc.
-  const classRegex = new RegExp(`(?:-)?\\b(?:${PREFIXES.join("|")})-[0-9]+\\b`, "g");
-
-  files.forEach((file) => {
-    if (hasValidExtension(file)) {
-      const content = fs.readFileSync(file, "utf8");
-      let match;
-      classRegex.lastIndex = 0;
-      while ((match = classRegex.exec(content)) !== null) {
-        classes.add(match[0]);
-      }
-    }
-  });
-
-  return Array.from(classes);
+// Pre-populate decimal values from 0 to 10 (with steps equivalent to grow-pr-100 = 1)
+const decimalValues = {};
+for (let i = 0; i <= 1000; i++) {
+  decimalValues[i] = `${i / 100}`;
 }
 
 module.exports = plugin.withOptions(
   function (options = {}) {
-    return function ({ addUtilities, addBase }) {
-      const srcDir = options.srcDir ? path.resolve(options.srcDir) : path.join(process.cwd(), "src");
-      const foundClasses = extractPercentClasses(srcDir);
-      const utilities = {};
-      const baseStyles = {};
-
-      foundClasses.forEach((classToken) => {
-        // Parse the class token: e.g. "-mt-pr-5" or "w-pr-50"
-        const isNegative = classToken.startsWith("-");
-        const cleanToken = isNegative ? classToken.slice(1) : classToken;
-        
-        // Split by the last hyphen to get prefix and value
-        const lastHyphenIndex = cleanToken.lastIndexOf("-");
-        if (lastHyphenIndex === -1) return;
-        
-        const prefix = cleanToken.substring(0, lastHyphenIndex);
-        const valueStr = cleanToken.substring(lastHyphenIndex + 1);
-        const num = parseInt(valueStr, 10);
-        
-        if (isNaN(num)) return;
-        
-        const properties = prefixToProperties[prefix];
-        if (!properties) return;
-
-        // Determine value format: percentage vs unitless fraction (grow/shrink)
-        const isFlexGrowOrShrink = prefix.includes("grow") || prefix.includes("shrink");
-        let cssValue;
-        if (isFlexGrowOrShrink) {
-          // grow/shrink are positive unitless values
-          cssValue = `${num / 100}`;
-        } else {
-          // positive/negative percentage
-          cssValue = isNegative ? `-${num}%` : `${num}%`;
+    return function ({ matchUtilities }) {
+      // 1. Spacing/Margins/Positions that support negative values
+      matchUtilities(
+        {
+          "top-pr": (value) => ({ top: value }),
+          "right-pr": (value) => ({ right: value }),
+          "bottom-pr": (value) => ({ bottom: value }),
+          "left-pr": (value) => ({ left: value }),
+          "m-pr": (value) => ({ margin: value }),
+          "mx-pr": (value) => ({
+            "margin-left": value,
+            "margin-right": value,
+          }),
+          "my-pr": (value) => ({
+            "margin-top": value,
+            "margin-bottom": value,
+          }),
+          "mt-pr": (value) => ({ "margin-top": value }),
+          "mr-pr": (value) => ({ "margin-right": value }),
+          "mb-pr": (value) => ({ "margin-bottom": value }),
+          "ml-pr": (value) => ({ "margin-left": value }),
+        },
+        {
+          values: percentValues,
+          supportsNegativeValues: true,
         }
+      );
 
-        const declarations = {};
-        properties.forEach((prop) => {
-          declarations[prop] = cssValue;
-        });
-
-        if (isNegative) {
-          // Negative utility classes start with a hyphen, which is rejected by addUtilities' selector validation.
-          // Registering them under addBase works perfectly.
-          const selector = `.${classToken}`;
-          baseStyles[selector] = declarations;
-        } else {
-          const selector = `.${classToken}`;
-          utilities[selector] = declarations;
+      // 2. Utilities without negative values support (Percentages)
+      matchUtilities(
+        {
+          "w-pr": (value) => ({ width: value }),
+          "h-pr": (value) => ({ height: value }),
+          "min-w-pr": (value) => ({ "min-width": value }),
+          "min-h-pr": (value) => ({ "min-height": value }),
+          "max-w-pr": (value) => ({ "max-width": value }),
+          "max-h-pr": (value) => ({ "max-height": value }),
+          "p-pr": (value) => ({ padding: value }),
+          "px-pr": (value) => ({
+            "padding-left": value,
+            "padding-right": value,
+          }),
+          "py-pr": (value) => ({
+            "padding-top": value,
+            "padding-bottom": value,
+          }),
+          "pt-pr": (value) => ({ "padding-top": value }),
+          "pr-pr": (value) => ({ "padding-right": value }),
+          "pb-pr": (value) => ({ "padding-bottom": value }),
+          "pl-pr": (value) => ({ "padding-left": value }),
+          "basis-pr": (value) => ({ "flex-basis": value }),
+          "flex-basis-pr": (value) => ({ "flex-basis": value }),
+        },
+        {
+          values: percentValues,
+          supportsNegativeValues: false,
         }
-      });
+      );
 
-      addUtilities(utilities);
-      addBase(baseStyles);
+      // 3. Flex grow and shrink utilities (Decimals, positive only)
+      matchUtilities(
+        {
+          "grow-pr": (value) => ({ "flex-grow": value }),
+          "flex-grow-pr": (value) => ({ "flex-grow": value }),
+          "shrink-pr": (value) => ({ "flex-shrink": value }),
+          "flex-shrink-pr": (value) => ({ "flex-shrink": value }),
+        },
+        {
+          values: decimalValues,
+          supportsNegativeValues: false,
+        }
+      );
     };
   }
 );
-
-// Clear require cache for this module so Node loads it fresh on every rebuild
-try {
-  delete require.cache[require.resolve(__filename)];
-} catch (e) {}
