@@ -1,91 +1,174 @@
 const plugin = require("tailwindcss/plugin");
 
-// Pre-populate percentage values from 0% to 1000%
+// Percentage values (0% - 1000%)
 const percentValues = {};
 for (let i = 0; i <= 1000; i++) {
   percentValues[i] = `${i}%`;
 }
 
-// Pre-populate decimal values from 0 to 10 (with steps equivalent to grow-pr-100 = 1)
+// Decimal values (0 - 10)
 const decimalValues = {};
 for (let i = 0; i <= 1000; i++) {
-  decimalValues[i] = `${i / 100}`;
+  decimalValues[i] = (i / 100).toString();
 }
 
-module.exports = plugin.withOptions(
-  function (options = {}) {
-    return function ({ matchUtilities }) {
-      // 1. Spacing/Margins/Positions that support negative values
-      matchUtilities(
-        {
-          "top-pr": (value) => ({ top: value }),
-          "right-pr": (value) => ({ right: value }),
-          "bottom-pr": (value) => ({ bottom: value }),
-          "left-pr": (value) => ({ left: value }),
-          "m-pr": (value) => ({ margin: value }),
-          "mx-pr": (value) => ({
-            "margin-left": value,
-            "margin-right": value,
-          }),
-          "my-pr": (value) => ({
-            "margin-top": value,
-            "margin-bottom": value,
-          }),
-          "mt-pr": (value) => ({ "margin-top": value }),
-          "mr-pr": (value) => ({ "margin-right": value }),
-          "mb-pr": (value) => ({ "margin-bottom": value }),
-          "ml-pr": (value) => ({ "margin-left": value }),
-        },
-        {
-          values: percentValues,
-          supportsNegativeValues: true,
-        }
-      );
+module.exports = plugin.withOptions(() => {
+  return function ({ matchUtilities }) {
+    /**
+     * Position & Margin Utilities
+     * Supports negative values
+     */
+    matchUtilities(
+      {
+        "top-pr": (value) => ({ top: value }),
+        "right-pr": (value) => ({ right: value }),
+        "bottom-pr": (value) => ({ bottom: value }),
+        "left-pr": (value) => ({ left: value }),
 
-      // 2. Utilities without negative values support (Percentages)
-      matchUtilities(
-        {
-          "w-pr": (value) => ({ width: value }),
-          "h-pr": (value) => ({ height: value }),
-          "min-w-pr": (value) => ({ "min-width": value }),
-          "min-h-pr": (value) => ({ "min-height": value }),
-          "max-w-pr": (value) => ({ "max-width": value }),
-          "max-h-pr": (value) => ({ "max-height": value }),
-          "p-pr": (value) => ({ padding: value }),
-          "px-pr": (value) => ({
-            "padding-left": value,
-            "padding-right": value,
-          }),
-          "py-pr": (value) => ({
-            "padding-top": value,
-            "padding-bottom": value,
-          }),
-          "pt-pr": (value) => ({ "padding-top": value }),
-          "pr-pr": (value) => ({ "padding-right": value }),
-          "pb-pr": (value) => ({ "padding-bottom": value }),
-          "pl-pr": (value) => ({ "padding-left": value }),
-          "basis-pr": (value) => ({ "flex-basis": value }),
-          "flex-basis-pr": (value) => ({ "flex-basis": value }),
-        },
-        {
-          values: percentValues,
-          supportsNegativeValues: false,
-        }
-      );
+        "inset-pr": (value) => ({ inset: value }),
 
-      // 3. Flex grow and shrink utilities (Decimals, positive only)
-      matchUtilities(
-        {
-          "grow-pr": (value) => ({ "flex-grow": value }),
-          "flex-grow-pr": (value) => ({ "flex-grow": value }),
-          "shrink-pr": (value) => ({ "flex-shrink": value }),
-          "flex-shrink-pr": (value) => ({ "flex-shrink": value }),
-        },
-        {
-          values: decimalValues,
-          supportsNegativeValues: false,
-        }
-      );
-    };
-  }
-);
+        "inset-x-pr": (value) => ({
+          left: value,
+          right: value,
+        }),
+
+        "inset-y-pr": (value) => ({
+          top: value,
+          bottom: value,
+        }),
+
+        "m-pr": (value) => ({
+          margin: value,
+        }),
+
+        "mx-pr": (value) => ({
+          marginLeft: value,
+          marginRight: value,
+        }),
+
+        "my-pr": (value) => ({
+          marginTop: value,
+          marginBottom: value,
+        }),
+
+        "mt-pr": (value) => ({
+          marginTop: value,
+        }),
+
+        "mr-pr": (value) => ({
+          marginRight: value,
+        }),
+
+        "mb-pr": (value) => ({
+          marginBottom: value,
+        }),
+
+        "ml-pr": (value) => ({
+          marginLeft: value,
+        }),
+      },
+      {
+        values: percentValues,
+        supportsNegativeValues: true,
+      }
+    );
+
+    /**
+     * Width / Height / Padding / Gap / Flex Basis
+     */
+    matchUtilities(
+      {
+        "w-pr": (value) => ({
+          width: value,
+        }),
+
+        "h-pr": (value) => ({
+          height: value,
+        }),
+
+        "min-w-pr": (value) => ({
+          minWidth: value,
+        }),
+
+        "min-h-pr": (value) => ({
+          minHeight: value,
+        }),
+
+        "max-w-pr": (value) => ({
+          maxWidth: value,
+        }),
+
+        "max-h-pr": (value) => ({
+          maxHeight: value,
+        }),
+
+        "p-pr": (value) => ({
+          padding: value,
+        }),
+
+        "px-pr": (value) => ({
+          paddingLeft: value,
+          paddingRight: value,
+        }),
+
+        "py-pr": (value) => ({
+          paddingTop: value,
+          paddingBottom: value,
+        }),
+
+        "pt-pr": (value) => ({
+          paddingTop: value,
+        }),
+
+        "pr-pr": (value) => ({
+          paddingRight: value,
+        }),
+
+        "pb-pr": (value) => ({
+          paddingBottom: value,
+        }),
+
+        "pl-pr": (value) => ({
+          paddingLeft: value,
+        }),
+
+        "gap-pr": (value) => ({
+          gap: value,
+        }),
+
+        "gap-x-pr": (value) => ({
+          columnGap: value,
+        }),
+
+        "gap-y-pr": (value) => ({
+          rowGap: value,
+        }),
+
+        "basis-pr": (value) => ({
+          flexBasis: value,
+        }),
+      },
+      {
+        values: percentValues,
+      }
+    );
+
+    /**
+     * Flex Grow & Shrink
+     */
+    matchUtilities(
+      {
+        "grow-pr": (value) => ({
+          flexGrow: value,
+        }),
+
+        "shrink-pr": (value) => ({
+          flexShrink: value,
+        }),
+      },
+      {
+        values: decimalValues,
+      }
+    );
+  };
+});
