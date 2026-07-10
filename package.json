@@ -1,6 +1,6 @@
 {
   "name": "tailwindcss-percent-utils",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Tailwind CSS plugin for percentage-based sizing, spacing, positioning, and flex utilities without square bracket syntax.",
   "main": "index.js",
   "type": "commonjs",
