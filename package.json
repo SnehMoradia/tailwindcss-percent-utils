@@ -1,31 +1,40 @@
 {
   "name": "tailwindcss-percent-utils",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tailwind CSS plugin for percentage-based sizing, spacing, positioning, and flex utilities without square bracket syntax.",
   "main": "index.js",
+  "type": "commonjs",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SnehMoradia/tailwindcss-percent-utils.git"
+  },
+  "homepage": "https://github.com/SnehMoradia/tailwindcss-percent-utils#readme",
+  "bugs": {
+    "url": "https://github.com/SnehMoradia/tailwindcss-percent-utils/issues"
   },
   "keywords": [
     "tailwindcss",
     "tailwind-plugin",
     "percent",
     "percentage",
-    "utilities",
-    "spacing",
-    "sizing",
-    "positioning",
-    "flex"
+    "utilities"
+  ],
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
   ],
   "peerDependencies": {
     "tailwindcss": ">=3.0.0"
   },
-  "files": [
-    "index.js"
-  ],
-  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^4.3.2"
+  },
   "engines": {
     "node": ">=14"
+  },
+  "scripts": {
+    "test": "echo \"No tests specified\""
   }
 }
